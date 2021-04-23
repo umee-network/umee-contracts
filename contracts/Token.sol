@@ -1,4 +1,4 @@
-// import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/token/ERC20//ERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/token/ERC20//ERC20.sol";
 
 
 // SPDX-License-Identifier: MIT
@@ -37,36 +37,16 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/utils/C
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is Context, IERC20, IERC20Metadata {
-    function toS(uint _i) internal pure returns (string memory _uintAsString) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint j = _i;
-        uint len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint k = len;
-        while (_i != 0) {
-            k = k-1;
-            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
-            bytes1 b1 = bytes1(temp);
-            bstr[k] = b1;
-            _i /= 10;
-        }
-        return string(bstr);
-    }
+// contract ERC20 is Context, IERC20, IERC20Metadata {
+contract MeToken is ERC20("MeToken", "UME") {
     // mapping (address => uint256) private _balances; // make sure this is never used by making sure it doesnt exist
 
     mapping (address => mapping (address => uint256)) private _allowances;
 
     // uint256 private _totalSupply; // make sure this is never used by making sure it doesnt exist
 
-    string private _name;
-    string private _symbol;
+    // string private _name;
+    // string private _symbol;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -86,24 +66,21 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     // uint public _multiplier;
     uint public _totalAtoms; // make private? change name to _totalAtoms 
     uint public _totalPoints; // make private?
-    // uint public MULTIPLIER;
-    // mapping(address =>uint256) private _points;
     mapping(address =>uint256) public _points; // make everyting private probably
     //things to test: putting points/atoms ratio way out of whack in each direction
     //
     
     // mapping(address ->uint) private _ratioOfTotalSupply_x__multiplier;
     constructor(){
-        // MULTIPLIER = 10e18; // 1,000,000,000,000,000,000
-        // _totalPoints = 1 * MULTIPLIER;
-        // _totalPoints = 10e18;
-        // _totalAtoms = 10e18; //deploy with 1 atom to make all the ratio stuff work amazingly
-        _totalPoints = 1;
-        _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
+        // _totalPoints = 1 * MULTIPLIER; // possibly use something like a thousand or million for this. Not 10e18 though
+        _totalPoints = 10e18;
+        _totalAtoms = 10e18; //deploy with 1 atom (10e18) to make all the ratio stuff work amazingly
+        // _totalPoints = 1;
+        // _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
         // _updateTotalAtomSupply(100 * 10e18);
         // _mint(_msgSender(), 1000);
-        _name = "MeToken";
-        _symbol = "UME";
+        // _name = "MeToken";
+        // _symbol = "UME";
     }
     function atomsToPoints(uint atoms) public view returns (uint256) { // careful about overflow
         // return atoms * MULTIPLIER/ _totalAtoms * _totalPoints;
@@ -168,11 +145,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      */
-    function _transfer(address sender, address recipient, uint256 amount) internal virtual {
+    function _transfer(address sender, address recipient, uint256 amount) internal virtual override {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
-        _beforeTokenTransfer(sender, recipient, amount);
+        // _beforeTokenTransfer(sender, recipient, amount);
 
         _move(sender,recipient, amount);
         // uint256 senderBalance = _balances[sender];
@@ -192,10 +169,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * - `to` cannot be the zero address.
      */
-    function _mint(address account, uint256 amount) public virtual {// unlock (move) to ethereum //(switch back to internal (or private?))
+    function mint(address account, uint256 amount) public {_mint(account, amount);}
+    function _mint(address account, uint256 amount) internal virtual override {// unlock (move) to ethereum //(switch back to internal (or private?))
         require(account != address(0), "ERC20: mint to the zero address");
 
-        _beforeTokenTransfer(address(0), account, amount);
+        // _beforeTokenTransfer(address(0), account, amount);
 
         uint newTotalAtoms = _totalAtoms + amount;
         uint newTotalPoints =  newTotalAtoms * _totalPoints / _totalAtoms;
@@ -204,7 +182,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         // replace these require staments with js tests with acceptable error intervals
         _totalPoints = newTotalPoints;
         _totalAtoms = newTotalAtoms;
-        require(points == atomsToPoints(amount),toS(_totalPoints));
+        // require(points == atomsToPoints(amount), "issue"); turn this on for testing only.
         _points[account] += points;
 
 
@@ -222,10 +200,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
      */
-    function _burn(address account, uint256 amount) public virtual {// lock (move to cosmos) // (switch back to internal (or private?))
+    function burn(address account, uint256 amount) public {_burn(account, amount);}
+    function _burn(address account, uint256 amount) internal virtual override {// lock (move to cosmos) // (switch back to internal (or private?))
         // require(account != address(0), "ERC20: burn from the zero address");
 
-        _beforeTokenTransfer(account, address(0), amount);
+        // _beforeTokenTransfer(account, address(0), amount);
 
         uint256 fromBalance = pointsToAtoms(_points[account]);
         require(fromBalance >= amount, "ERC777: burn amount exceeds balance");
@@ -237,7 +216,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         // replace these require staments with js tests with acceptable error intervals
         _totalPoints = newTotalPoints;
         _totalAtoms = newTotalAtoms;
-        require(points == atomsToPoints(amount), toS(_totalPoints));
+        // require(points == atomsToPoints(amount), "issue");// maybe turn this on for testing only.
         _points[account] -= points;
 
         emit Transfer(account, address(0), amount);
@@ -246,17 +225,17 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     /**
      * @dev Returns the name of the token.
      */
-    function name() public view virtual override returns (string memory) {
-        return _name;
-    }
+    // function name() public view virtual override returns (string memory) {
+    //     return _name;
+    // }
 
     /**
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
-    function symbol() public view virtual override returns (string memory) {
-        return _symbol;
-    }
+    // function symbol() public view virtual override returns (string memory) {
+    //     return _symbol;
+    // }
 
     /**
      * @dev Returns the number of decimals used to get its user representation.
@@ -342,10 +321,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender] + addedValue);
-        return true;
-    }
+    // function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+    //     _approve(_msgSender(), spender, _allowances[_msgSender()][spender] + addedValue);
+    //     return true;
+    // }
 
     /**
      * @dev Atomically decreases the allowance granted to `spender` by the caller.
@@ -361,13 +340,13 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = _allowances[_msgSender()][spender];
-        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
-        _approve(_msgSender(), spender, currentAllowance - subtractedValue);
+    // function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+    //     uint256 currentAllowance = _allowances[_msgSender()][spender];
+    //     require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
+    //     _approve(_msgSender(), spender, currentAllowance - subtractedValue);
 
-        return true;
-    }
+    //     return true;
+    // }
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the `owner` s tokens.
@@ -382,13 +361,13 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `owner` cannot be the zero address.
      * - `spender` cannot be the zero address.
      */
-    function _approve(address owner, address spender, uint256 amount) internal virtual {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
+    // function _approve(address owner, address spender, uint256 amount) internal virtual {
+    //     require(owner != address(0), "ERC20: approve from the zero address");
+    //     require(spender != address(0), "ERC20: approve to the zero address");
 
-        _allowances[owner][spender] = amount;
-        emit Approval(owner, spender, amount);
-    }
+    //     _allowances[owner][spender] = amount;
+    //     emit Approval(owner, spender, amount);
+    // }
 
     /**
      * @dev Hook that is called before any transfer of tokens. This includes
@@ -404,5 +383,5 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual { }
+    // function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual { }
 }
