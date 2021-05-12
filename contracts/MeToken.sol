@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/token/ERC20//ERC20.sol";
+// import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/token/ERC20//ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20//ERC20.sol";
 /**
  * @dev Implementation of the {IERC20} interface.
  *
@@ -62,10 +63,10 @@ contract MeToken is ERC20("MeToken", "UME") {
     // mapping(address ->uint) private _ratioOfTotalSupply_x__multiplier;
     constructor(){
         // _totalPoints = 1 * MULTIPLIER; // possibly use something like a thousand or million for this. Not 10e18 though
-        _totalPoints = 10e18;
-        _totalAtoms = 10e18; //deploy with 1 atom (10e18) to make all the ratio stuff work amazingly
-        // _totalPoints = 1;
-        // _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
+        // _totalPoints = 10e18;
+        // _totalAtoms = 10e18; //deploy with 1 atom (10e18) to make all the ratio stuff work amazingly
+        _totalPoints = 1;
+        _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
         // _updateTotalAtomSupply(100 * 10e18);
         // _mint(_msgSender(), 1000);
         // _name = "MeToken";

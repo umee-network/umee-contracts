@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "hardhat": "^2.2.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.1.0"
+  }
+}

@@ -1,2 +1,2 @@
 # umee-contracts
-The Ethereum contracts for Umee
+The Ethereum contracts for Umee MeToken
