@@ -1,88 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/token/ERC20//ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20//ERC20.sol";
-/**
- * @dev Implementation of the {IERC20} interface.
- *
- * This implementation is agnostic to the way tokens are created. This means
- * that a supply mechanism has to be added in a derived contract using {_mint}.
- * For a generic mechanism see {ERC20PresetMinterPauser}.
- *
- * TIP: For a detailed writeup see our guide
- * https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
- * to implement supply mechanisms].
- *
- * We have followed general OpenZeppelin guidelines: functions revert instead
- * of returning `false` on failure. This behavior is nonetheless conventional
- * and does not conflict with the expectations of ERC20 applications.
- *
- * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
- * This allows applications to reconstruct the allowance for all accounts just
- * by listening to said events. Other implementations of the EIP may not emit
- * these events, as it isn't required by the specification.
- *
- * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
- * functions have been added to mitigate the well-known issues around setting
- * allowances. See {IERC20-approve}.
- */
-// contract ERC20 is Context, IERC20, IERC20Metadata {
+
 contract MeToken is ERC20("MeToken", "UME") {
-    //make sure all the vars that we dont use dont exist by making a test function which tries to read them. 
-    //it should fail to even compile
-    // mapping (address => uint256) private _balances; // make sure this is never used by making sure it doesnt exist
-
-    // uint256 private _totalSupply; // make sure this is never used by making sure it doesnt exist
-
-    // string private _name;
-    // string private _symbol;
-
-    /**
-     * @dev Sets the values for {name} and {symbol}.
-     *
-     * The defaut value of {decimals} is 18. To select a different value for
-     * {decimals} you should overload it.
-     *
-     * All two of these values are immutable: they can only be set once during
-     * construction.
-     */
-     //all underscores are public for TESTING ONLY
-     //All standard interfaces should interface with ATOMS
-
-     // remove the var _balances and make sure it all still compiles
-     // remove the var _totalAtoms and make sure it all still compiles
-
-    // uint public _multiplier;
-    uint public _totalAtoms; // make private? change name to _totalAtoms 
-    uint public _totalPoints; // make private?
-    mapping(address =>uint256) public _points; // make everyting private probably
-    //things to test: putting points/atoms ratio way out of whack in each direction
-    //
-    
-    // mapping(address ->uint) private _ratioOfTotalSupply_x__multiplier;
+  
+    uint public _totalAtoms;
+    uint public _totalPoints;
+    mapping(address =>uint256) public _points;
     constructor(){
-        // _totalPoints = 1 * MULTIPLIER; // possibly use something like a thousand or million for this. Not 10e18 though
-        // _totalPoints = 10e18;
-        // _totalAtoms = 10e18; //deploy with 1 atom (10e18) to make all the ratio stuff work amazingly
-        _totalPoints = 1;
-        _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
-        // _updateTotalAtomSupply(100 * 10e18);
-        // _mint(_msgSender(), 1000);
-        // _name = "MeToken";
-        // _symbol = "UME";
+        _totalPoints = 10e18;
+        _totalAtoms = 10e18;
+        // _totalPoints = 1;
+        // _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
     }
-    function atomsToPoints(uint atoms) public view returns (uint256) { // careful about overflow
-        // return atoms * MULTIPLIER/ _totalAtoms * _totalPoints;
-        return atoms * _totalPoints / _totalAtoms;
+    function atomsToPoints(uint atoms) public view returns (uint256) { // rounds down
+        return (atoms * _totalPoints + _totalAtoms - 1) / _totalAtoms;
     }
-    function pointsToAtoms(uint points) public view returns (uint256) {// careful of possible overflow
-        // return points * _totalAtoms / _totalPoints / MULTIPLIER;
+    function pointsToAtoms(uint points) public view returns (uint256) {// rounds down
         return points * _totalAtoms / _totalPoints;
     }
-    function _updateTotalAtomSupply(uint newTotal) public { // add guard modifier
+    function _updateTotalAtomSupply(uint newTotal) public {
         _totalAtoms = newTotal;
-        // log this event in some way
     }
    function _move(
         address from,
@@ -91,16 +30,13 @@ contract MeToken is ERC20("MeToken", "UME") {
     )
         private
     {
-        // _beforeTokenTransfer(operator, from, to, amount);
-        uint pointAmount = atomsToPoints(amount);
-        
+
+        uint256 pointAmount = atomsToPoints(amount);// rounded up
         uint256 fromBalance = _points[from];
         require(fromBalance >= pointAmount, "ERC777: transfer amount exceeds balance");
-        
         _points[from] -= pointAmount;
         _points[to] += pointAmount;
 
-        // emit Sent(operator, from, to, amount, userData, operatorData);
         emit Transfer(from, to, amount);
     }
 
@@ -114,38 +50,15 @@ contract MeToken is ERC20("MeToken", "UME") {
     /**
      * @dev See {IERC20-balanceOf}.
      */
-    // function balanceOf(address account) public view virtual override returns (uint256) {
-    //     return _balances[account];
-    // }
     function balanceOf(address tokenHolder) public view virtual override returns (uint256) {
         return pointsToAtoms(_points[tokenHolder]);
     }
 
-    /**
-     * @dev Moves tokens `amount` from `sender` to `recipient`.
-     *
-     * This is internal function is equivalent to {transfer}, and can be used to
-     * e.g. implement automatic token fees, slashing mechanisms, etc.
-     *
-     * Emits a {Transfer} event.
-     *
-     * Requirements:
-     *
-     * - `sender` cannot be the zero address.
-     * - `recipient` cannot be the zero address.
-     * - `sender` must have a balance of at least `amount`.
-     */
     function _transfer(address sender, address recipient, uint256 amount) internal virtual override {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
-        // _beforeTokenTransfer(sender, recipient, amount);
-
         _move(sender,recipient, amount);
-        // uint256 senderBalance = _balances[sender];
-        // require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
-        // _balances[sender] = senderBalance - amount;
-        // _balances[recipient] += amount;
 
         emit Transfer(sender, recipient, amount);
     }
@@ -159,8 +72,8 @@ contract MeToken is ERC20("MeToken", "UME") {
      *
      * - `to` cannot be the zero address.
      */
-    function mint(address account, uint256 amount) public {_mint(account, amount);}// add authorization guard
-    function _mint(address account, uint256 amount) internal virtual override {// unlock (move) to ethereum //(switch back to internal (or private?))
+    function mint(address account, uint256 amount) public {_mint(account, amount);}
+    function _mint(address account, uint256 amount) internal virtual override {// unlock or "move" to ethereum
         require(account != address(0), "ERC20: mint to the zero address");
 
         // _beforeTokenTransfer(address(0), account, amount);
@@ -168,11 +81,8 @@ contract MeToken is ERC20("MeToken", "UME") {
         uint newTotalAtoms = _totalAtoms + amount;
         uint newTotalPoints =  newTotalAtoms * _totalPoints / _totalAtoms;
         uint points = newTotalPoints - _totalPoints;
-        // require(_totalPoints * 1000000 / _totalAtoms == newTotalPoints * 1000000 / newTotalAtoms, "ratio mismatch");
-        // replace these require staments with js tests with acceptable error intervals
         _totalPoints = newTotalPoints;
         _totalAtoms = newTotalAtoms;
-        // require(points == atomsToPoints(amount), "issue"); turn this on for testing only.
         _points[account] += points;
 
 
@@ -190,9 +100,9 @@ contract MeToken is ERC20("MeToken", "UME") {
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
      */
-    function burn(address account, uint256 amount) public {_burn(account, amount);} // add authorization guard
-    function _burn(address account, uint256 amount) internal virtual override {// lock (move to cosmos) // 
-        // require(account != address(0), "ERC20: burn from the zero address");
+    function burn(address account, uint256 amount) public {_burn(account, amount);}
+    function _burn(address account, uint256 amount) internal virtual override {// lock or "move" back to cosmos
+        require(account != address(0), "ERC20: burn from the zero address");
 
         // _beforeTokenTransfer(account, address(0), amount);
 
@@ -202,11 +112,8 @@ contract MeToken is ERC20("MeToken", "UME") {
         uint newTotalAtoms = _totalAtoms - amount;
         uint newTotalPoints = newTotalAtoms * _totalPoints / _totalAtoms;
         uint points = _totalPoints - newTotalPoints;
-        // require(_totalPoints * 1000000 / _totalAtoms == newTotalPoints * 1000000 / newTotalAtoms, "ratio mismatch");
-        // replace these require staments with js tests with acceptable error intervals
         _totalPoints = newTotalPoints;
         _totalAtoms = newTotalAtoms;
-        // require(points == atomsToPoints(amount), "issue");// maybe turn this on for testing only.
         _points[account] -= points;
 
         emit Transfer(account, address(0), amount);
