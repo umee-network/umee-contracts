@@ -1,6 +1,13 @@
 const MeToken = artifacts.require("MeToken");
 const { print, assertBal, assertPts, assertSumsDontExceedTotal, assertPointAtomsConversions } = require("./utils")
 
+//to test:
+// make sure going from asking `balanceOf()` and then `transfer` using that reported balance 
+// (a) always has enough points for the transfer
+// (b) always results in the receiver having *at least* that many atoms (and hopefully )
+// (c) (this may be the case but might not be possible) *if* receiver already have a balance, 
+// their new balance is *at least* the sum of theirs before and after. logically I think it makes sense because
+// both people will see rounded down atoms amount when querying their own balance, and since 
 
 contract("MeToken Integration Tests", async (accounts) => {
 

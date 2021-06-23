@@ -14,7 +14,7 @@ contract MeToken is ERC20("MeToken", "UME") {
         // _totalPoints = 1;
         // _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
     }
-    function atomsToPoints(uint atoms) public view returns (uint256) { // rounds down
+    function atomsToPoints(uint atoms) public view returns (uint256) { // rounds up
         return (atoms * _totalPoints + _totalAtoms - 1) / _totalAtoms;
     }
     function pointsToAtoms(uint points) public view returns (uint256) {// rounds down
@@ -31,7 +31,7 @@ contract MeToken is ERC20("MeToken", "UME") {
         private
     {
 
-        uint256 pointAmount = atomsToPoints(amount);// rounded up
+        uint256 pointAmount = atomsToPoints(amount);// rounded up so the receiver gets *at least* the amount sent
         uint256 fromBalance = _points[from];
         require(fromBalance >= pointAmount, "ERC777: transfer amount exceeds balance");
         _points[from] -= pointAmount;

@@ -122,7 +122,7 @@ var print = async (instance, accounts) => {
 
   console.log("\nCONTRACT STATUS")
   console.log("=========================================================================================")
-  console.log("|         |                           Atoms |                          Points |")
+  console.log("|         |                                Atoms |                               Points |")
   console.log("|=======================================================================================|")
   console.log("|Account0 |", b0, "|", p0, "|")
   console.log("|Account1 |", b1, "|", p1, "|")
