@@ -1,4 +1,4 @@
-const MeToken = artifacts.require("MeToken");
+const MeToken = artifacts.require("MeTokenTest");
 const { print, assertBal, assertPts, assertSumsDontExceedTotal, assertPointAtomsConversions } = require("./utils")
 
 //to test:

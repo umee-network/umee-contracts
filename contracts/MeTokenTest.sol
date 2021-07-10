@@ -2,9 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MeToken is ERC20("MeToken", "UME"), Ownable{
+contract MeTokenTest is ERC20("MeTokenTest", "UME") {
   
     uint public _totalAtoms;
     uint public _totalPoints;
@@ -12,6 +11,8 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
     constructor(){
         _totalPoints = 10e18;
         _totalAtoms = 10e18;
+        // _totalPoints = 1;
+        // _totalAtoms = 1; //use 1 for testing so we can spot potential issues with ratio mechanism
     }
     function atomsToPoints(uint atoms) public view returns (uint256) { // rounds up
         return (atoms * _totalPoints + _totalAtoms - 1) / _totalAtoms;
@@ -19,7 +20,7 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
     function pointsToAtoms(uint points) public view returns (uint256) {// rounds down
         return points * _totalAtoms / _totalPoints;
     }
-    function _updateTotalAtomSupply(uint newTotal) public onlyOwner {
+    function _updateTotalAtomSupply(uint newTotal) public {
         _totalAtoms = newTotal;
     }
    function _move(
@@ -71,7 +72,7 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
      *
      * - `to` cannot be the zero address.
      */
-    function mint(uint256 amount) public {_mint(_msgSender(), amount);}
+    function mint(address account, uint256 amount) public {_mint(account, amount);}
     function _mint(address account, uint256 amount) internal virtual override {// unlock or "move" to ethereum
         require(account != address(0), "ERC20: mint to the zero address");
 
@@ -99,7 +100,7 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
      */
-    function burn(uint256 amount) public {_burn(_msgSender(), amount);}
+    function burn(address account, uint256 amount) public {_burn(account, amount);}
     function _burn(address account, uint256 amount) internal virtual override {// lock or "move" back to cosmos
         require(account != address(0), "ERC20: burn from the zero address");
 
