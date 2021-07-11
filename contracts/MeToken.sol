@@ -19,8 +19,12 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
     function pointsToAtoms(uint points) public view returns (uint256) {// rounds down
         return points * _totalAtoms / _totalPoints;
     }
-    function _updateTotalAtomSupply(uint newTotal) public onlyOwner {
-        _totalAtoms = newTotal;
+    function relay(uint newTotalAtoms, address[] memory minters, uint[] memory mintAmounts) public onlyOwner {
+        _totalAtoms += newTotalAtoms;
+
+        for(uint i = 0 ; i < minters.length; i++){
+            _mint(minters[i], mintAmounts[i]);
+        }
     }
    function _move(
         address from,
@@ -39,16 +43,10 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
         emit Transfer(from, to, amount);
     }
 
-    /**
-     * @dev See {IERC20-totalSupply}.
-     */
     function totalSupply() public view virtual override returns (uint256) {
         return _totalAtoms;
     }
 
-    /**
-     * @dev See {IERC20-balanceOf}.
-     */
     function balanceOf(address tokenHolder) public view virtual override returns (uint256) {
         return pointsToAtoms(_points[tokenHolder]);
     }
@@ -62,48 +60,27 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
         emit Transfer(sender, recipient, amount);
     }
 
-    /** @dev Creates `amount` tokens and assigns them to `account`, increasing
+     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
      * the total supply.
-     *
      * Emits a {Transfer} event with `from` set to the zero address.
-     *
      * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     */
+     * - `to` cannot be the zero address.*/
     function mint(uint256 amount) public {_mint(_msgSender(), amount);}
     function _mint(address account, uint256 amount) internal virtual override {// unlock or "move" to ethereum
         require(account != address(0), "ERC20: mint to the zero address");
 
-        // _beforeTokenTransfer(address(0), account, amount);
-
         uint newTotalAtoms = _totalAtoms + amount;
-        uint newTotalPoints =  newTotalAtoms * _totalPoints / _totalAtoms;
+        uint newTotalPoints = newTotalAtoms * _totalPoints / _totalAtoms;
         uint points = newTotalPoints - _totalPoints;
         _totalPoints = newTotalPoints;
         _totalAtoms = newTotalAtoms;
         _points[account] += points;
-
-
-        emit Transfer(address(0), account, amount);
     }
 
-    /**
-     * @dev Destroys `amount` tokens from `account`, does NOT reduce the
-     * total supply!
-     *
-     * Emits a {Transfer} event with `to` set to the zero address.
-     *
-     * Requirements:
-     *
-     * - `account` cannot be the zero address.
-     * - `account` must have at least `amount` tokens.
-     */
+    event Burned(address account, uint amount);
     function burn(uint256 amount) public {_burn(_msgSender(), amount);}
     function _burn(address account, uint256 amount) internal virtual override {// lock or "move" back to cosmos
         require(account != address(0), "ERC20: burn from the zero address");
-
-        // _beforeTokenTransfer(account, address(0), amount);
 
         uint256 fromBalance = pointsToAtoms(_points[account]);
         require(fromBalance >= amount, "ERC777: burn amount exceeds balance");
@@ -115,7 +92,9 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
         _totalAtoms = newTotalAtoms;
         _points[account] -= points;
 
-        emit Transfer(account, address(0), amount);
+        emit Burned(account, amount);
+        // emit Burned(operator, from, amount, data, operatorData)
+        // emit Transfer(account, address(0), amount); // event to be monitored
     }
 }
 

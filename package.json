@@ -4,6 +4,11 @@
     "chai": "^4.3.4"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0"
+    "@openzeppelin/contracts": "^4.1.0",
+    "@truffle/hdwallet-provider": "^1.4.1",
+    "eth-util-lite": "^1.0.1",
+    "ethereumjs-tx": "^2.1.2",
+    "isomorphic-rpc": "^1.2.1",
+    "rlp": "^2.2.6"
   }
 }
