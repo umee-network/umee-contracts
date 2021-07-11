@@ -9,6 +9,8 @@
     "eth-util-lite": "^1.0.1",
     "ethereumjs-tx": "^2.1.2",
     "isomorphic-rpc": "^1.2.1",
-    "rlp": "^2.2.6"
+    "knex": "^0.95.7",
+    "rlp": "^2.2.6",
+    "sqlite3": "^5.0.2"
   }
 }

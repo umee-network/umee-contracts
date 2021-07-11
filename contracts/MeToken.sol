@@ -19,13 +19,6 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
     function pointsToAtoms(uint points) public view returns (uint256) {// rounds down
         return points * _totalAtoms / _totalPoints;
     }
-    function relay(uint newTotalAtoms, address[] memory minters, uint[] memory mintAmounts) public onlyOwner {
-        _totalAtoms += newTotalAtoms;
-
-        for(uint i = 0 ; i < minters.length; i++){
-            _mint(minters[i], mintAmounts[i]);
-        }
-    }
    function _move(
         address from,
         address to,
@@ -60,13 +53,19 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
         emit Transfer(sender, recipient, amount);
     }
 
-     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
-     * the total supply.
-     * Emits a {Transfer} event with `from` set to the zero address.
-     * Requirements:
-     * - `to` cannot be the zero address.*/
-    function mint(uint256 amount) public {_mint(_msgSender(), amount);}
-    function _mint(address account, uint256 amount) internal virtual override {// unlock or "move" to ethereum
+
+    // Initiated by our servers at a regular time interval. access controlled
+    // Users first have to run `initiateTransferToEthereum()` from cosmos
+    function unlockOnEthereum(uint newTotalAtoms, address[] memory minters, uint[] memory mintAmounts) public onlyOwner {
+        _totalAtoms += newTotalAtoms;
+
+        for(uint i = 0 ; i < minters.length; i++){
+            _mint(minters[i], mintAmounts[i]);
+        }
+        emit UnlockOnEthereum(keccak256(abi.encode(newTotalAtoms, minters, mintAmounts)));
+    }
+    event UnlockOnEthereum(bytes32 digest);
+    function _mint(address account, uint256 amount) internal virtual override {
         require(account != address(0), "ERC20: mint to the zero address");
 
         uint newTotalAtoms = _totalAtoms + amount;
@@ -77,9 +76,15 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
         _points[account] += points;
     }
 
-    event Burned(address account, uint amount);
-    function burn(uint256 amount) public {_burn(_msgSender(), amount);}
-    function _burn(address account, uint256 amount) internal virtual override {// lock or "move" back to cosmos
+    // Initiated by individual users at any time.
+    // After a waiting period, `unlockOnCosmos()` will be initiated by umee bridge servers.
+    function initiateTransferToCosmos(uint256 amount, bytes memory cosmosAddress) public { // user initiates
+        _burn(_msgSender(), amount);
+        emit InitiateTransferToCosmos(amount, cosmosAddress);
+    }
+    event InitiateTransferToCosmos(uint amount, bytes cosmosAddress);
+    // note: may be non-standard `_burn` because it changes `totalSupply`
+    function _burn(address account, uint256 amount) internal virtual override {
         require(account != address(0), "ERC20: burn from the zero address");
 
         uint256 fromBalance = pointsToAtoms(_points[account]);
@@ -91,11 +96,8 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
         _totalPoints = newTotalPoints;
         _totalAtoms = newTotalAtoms;
         _points[account] -= points;
-
-        emit Burned(account, amount);
-        // emit Burned(operator, from, amount, data, operatorData)
-        // emit Transfer(account, address(0), amount); // event to be monitored
     }
+
 }
 
 
