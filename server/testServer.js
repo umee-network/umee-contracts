@@ -11,7 +11,7 @@ async function serve(){
   console.log('\nMONITORING ' + network + ' NETWORK')
 
   var lastBlockHeight = await rpc.eth_blockNumber()
-  while(true){ // until final nonce
+  while(true){ 
     let currentBlockHeight = await rpc.eth_blockNumber()
     if(parseInt(currentBlockHeight) >= parseInt(lastBlockHeight) + numConfimationBlocks){
       console.log('BlockHeight:\t', parseInt(currentBlockHeight))
@@ -20,6 +20,9 @@ async function serve(){
       let logs = await rpc.eth_getLogs({"address":"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]})
       var logTxs = []
       for (var i = 0; i < logs.length; i++) {
+        if(i == 0){
+          console.log(logs[i], "\n");
+        }
         logTxs.push(logs[i]["transactionHash"])
       }
       console.log("LOGS\t", logTxs)
