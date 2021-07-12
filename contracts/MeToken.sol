@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MeToken is ERC20("MeToken", "UME"), Ownable{
+contract MeToken is ERC20("MeToken", "UME"), Ownable{ /* MeToken living on Ethereum*/
   
     uint public _totalAtoms;
     uint public _totalPoints;
@@ -54,7 +54,7 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
     }
 
 
-    // Initiated by our servers at a regular time interval. access controlled
+    // Initiated by our bridge servers at a regular time interval. access controlled
     // Users first have to run `initiateTransferToEthereum()` from cosmos
     function unlockOnEthereum(uint newTotalAtoms, address[] memory minters, uint[] memory mintAmounts) public onlyOwner {
         _totalAtoms += newTotalAtoms;
@@ -97,7 +97,6 @@ contract MeToken is ERC20("MeToken", "UME"), Ownable{
         _totalAtoms = newTotalAtoms;
         _points[account] -= points;
     }
-
 }
 
 

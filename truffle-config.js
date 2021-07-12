@@ -60,7 +60,23 @@ module.exports = {
     // NB: It's important to wrap the provider as a function.
     kovan: {
     provider: () => new HDWalletProvider(process.env.KOVAN_KEY, `https://kovan.infura.io/v3/3cb706370956464e9cd6aebdd1c9980d`),
-    network_id: 42,       // Ropsten's id
+    network_id: 42,       
+    gas: 5500000,        // Ropsten has a lower block limit than mainnet
+    confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+    timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+    skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+    ropsten: {
+    provider: () => new HDWalletProvider(process.env.KOVAN_KEY, `https://ropsten.infura.io/v3/3cb706370956464e9cd6aebdd1c9980d`),
+    network_id: 3,       // Ropsten's id
+    gas: 5500000,        // Ropsten has a lower block limit than mainnet
+    confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+    timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+    skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+    ganache: {
+    provider: () => new HDWalletProvider(process.env.KOVAN_KEY, `http://127.0.0.1:7545`),
+    network_id: 5777,       // Ropsten's id
     gas: 5500000,        // Ropsten has a lower block limit than mainnet
     confirmations: 2,    // # of confs to wait between deployments. (default: 0)
     timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)

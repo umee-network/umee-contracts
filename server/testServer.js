@@ -1,3 +1,7 @@
+// InitiateTransferToCosmos  0x44b0368955968a3e4d3068c5dfb49fc0b2f2093d766a929af2d0cff02f831b68
+// UnlockOnEthereum          0x5981c722c80ec5ac96ac1a266cd7f33c1b6bf50d8e264f24e2319d85b49829e7
+
+
 const Rpc = require('isomorphic-rpc')
 const network = 'mainnet' // process.argv[0] || 
 const rpc = new Rpc('https://' + network + '.infura.io/v3/3cb706370956464e9cd6aebdd1c9980d')

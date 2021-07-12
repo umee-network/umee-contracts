@@ -2,37 +2,50 @@ const knex = require('knex')({
   client: 'sqlite3',
   useNullAsDefault: true,
   connection: {
-    filename: './data.db',
+    filename: './server/data.db',
   },
 });
 
 
-async function dostuff(){
+async function createTable(){
   try {
-    // Create a table
     await knex.schema
-      .createTable('burnEvents', table => {
+      .createTable('initiateTransferToCosmos', table => { // ethereum event
         table.increments('id');
         table.string('amount');
         table.string('cosmosAddress');
         table.string('status');
-
-        table.string('transactionHash');
-        table.string('blockHash');
-        table.string('blockNumber');
         table.index(['amount','cosmosAddress','status']);
       })
-      .createTable('burnEvents', table => {
+      .createTable('unlockOnEthereum', table => { // ethereum event
+        table.increments('id');
+        table.string('digest');
+        table.string('status');
+        table.integer('initiateTransferToCosmos_id')
+          .unsigned() // has_many initiateTransferToCosmos's
+          .references('initiateTransferToCosmos.id');
+        table.index(['digest','status', 'InitiateTransferToCosmos_id']);
+      })
+      // Cosmos events
+      .createTable('initiateTransferToEthereum', table => { // cosmos event
         table.increments('id');
         table.string('amount');
-        table.string('cosmosAddress');
-        table.string('status');
-
-        table.string('transactionHash');
-        table.string('blockHash');
-        table.string('blockNumber');
-        table.index(['amount','cosmosAddress','status']);
+        table.string('ethereumAddress');
+        table.integer('status'); //a UOE has_many ITTCs
+        table.index(['amount','ethereumAddress','status']);
       })
+      .createTable('unlockOnCosmos', table => { // cosmos event
+        table.increments('id');
+        table.string('digest');
+        table.string('status');
+        table.integer('initiateTransferToEthereum_id')
+          .unsigned()
+          .references('initiateTransferToEthereum.id'); // has_many initiateTransferToEthereum's
+        table.index(['digest','status', 'InitiateTransferToCosmos_id']);
+      })
+
+
+
       // ...and another
       .createTable('accounts', table => {
         table.increments('id');
@@ -62,4 +75,4 @@ async function dostuff(){
   console.log("HELLO")
 }
 
-dostuff()
+createTable()
